@@ -19,12 +19,19 @@ repositories {
 
 ext {
     set('springCloudVersion', "2023.0.2")
+    set('otelVersion', "2.6.0")
 }
 
 dependencies {
     implementation 'org.springframework.cloud:spring-cloud-config-server'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+    runtimeOnly "io.opentelemetry.javaagent:opentelemetry-javaagent:${otelVersion}"
+
 }
 
 dependencyManagement {
@@ -35,4 +42,37 @@ dependencyManagement {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+bootBuildImage{
+    imageName = "${project.name}"
+    environment = ["BP_JVM_VERSION": "21.*"]
+
+    buildWorkspace {
+        bind {
+            source = "/tmp/cache-${rootProject.name}.work"
+        }
+    }
+    buildCache {
+        bind {
+            source = "/tmp/cache-${rootProject.name}.build"
+        }
+    }
+    launchCache {
+        bind {
+            source = "/tmp/cache-${rootProject.name}.launch"
+        }
+    }
+
+    docker {
+        publishRegistry {
+            username = project.findProperty("registryUsername")
+            password = project.findProperty("registryToken")
+            url = project.findProperty("registryUrl")
+        }
+    }
+}
+
+springBoot {
+    buildInfo()
 }

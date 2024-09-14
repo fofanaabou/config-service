@@ -5,11 +5,10 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/fofanaabou/config-repo.git
+          uri: https://github.com/fofanaabou/config-repo
           timeout: 5
           clone-on-start: true
           force-pull: true
-          basedir: config-repo
           default-label: master
 
 server:
@@ -20,3 +19,29 @@ server:
     threads:
       max: 50
       min-spare: 5
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+        exclude: "env,beans"
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+logging:
+  level:
+    web: debug
+  pattern:
+    level: "%5p [${spring.application.name}, %X{trace_id}, %X{span_id}]"
